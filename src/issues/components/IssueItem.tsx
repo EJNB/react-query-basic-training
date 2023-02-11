@@ -23,10 +23,7 @@ export const IssueItem: FC<Props> = ({ issue }) => {
         )}
 
         <div className="d-flex flex-column flex-fill px-2">
-          <span>
-            {issue.title}
-            {/* <ReactMarkdown>{issue.body} </ReactMarkdown> */}
-          </span>
+          <span>{issue.title}</span>
           <span className="issue-subinfo">
             #{issue.number} opened days ago by{" "}
             <span className="fw-bold">{issue.user.login}</span>
