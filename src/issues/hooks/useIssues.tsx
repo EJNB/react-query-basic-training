@@ -2,14 +2,20 @@ import { githubApi } from "../../api/githubApi";
 import { Issue, Label, State } from "../interfaces";
 import { useQuery } from "@tanstack/react-query";
 import { sleep } from "../../helpers/sleep";
+import { useEffect, useState } from "react";
 
 interface Props {
   state?: State;
   labels: string[];
+  page?: number;
 }
 
-const getIssues = async (labels: string[], state?: State): Promise<Issue[]> => {
-  sleep(2);
+const getIssues = async ({
+  labels,
+  state,
+  page = 1,
+}: Props): Promise<Issue[]> => {
+  await sleep(2);
 
   const params = new URLSearchParams();
   if (state) params.append("state", state);
@@ -27,8 +33,31 @@ const getIssues = async (labels: string[], state?: State): Promise<Issue[]> => {
 };
 
 export const useIssues = ({ state, labels }: Props) => {
-  const issuesQuery = useQuery(["issues", { state, labels }], () =>
-    getIssues(labels, state)
+  const [page, setPage] = useState(1);
+
+  // Si el state o el labels cambia quiero regrear a la pagina 1
+  useEffect(() => {
+    setPage(1);
+  }, [state, labels]);
+
+  const issuesQuery = useQuery(["issues", { state, labels, page }], () =>
+    getIssues({ labels, state, page })
   );
-  return { issuesQuery };
+
+  const nextPage = () => {
+    if (issuesQuery.data?.length === 0) return;
+
+    setPage(page + 1);
+  };
+
+  const prevPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
+
+  return {
+    issuesQuery,
+    page: issuesQuery.isFetching ? "Loading" : page,
+    nextPage,
+    prevPage,
+  };
 };
